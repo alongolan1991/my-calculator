@@ -72,42 +72,42 @@ class App extends Component {
 
   // check if the input is  valid and handel error in some cases
   validation = command => {
+    let updatedCommand = command;
     let tempMathExpression = this.state.mathExpression;
     let lastExpressionChar = tempMathExpression[tempMathExpression.length - 1];
 
     // if the first command is "." so add 0 to begin!
     if (tempMathExpression === "" && command === ".") {
-      command = "0.";
+      updatedCommand = "0.";
     }
     // check if the first command is "* / 0"
     if (
       tempMathExpression === "" &&
       (command === "*" || command === "/" || command === "0")
     ) {
-      command = false;
+      updatedCommand = false;
     }
     // check if "(" come after number and if not add "*"
     if (this.isNumber(lastExpressionChar) && command === "(") {
-      command = "*(";
+      updatedCommand = "*(";
     }
     // check if number come after ")" and if not add "*"
     if (lastExpressionChar === ")" && this.isNumber(command)) {
-      command = "*" + command;
+      updatedCommand = "*" + command;
     }
     // check if thet only 1 dot in single number
     if (command === ".") {
       let dotFlag = false;
-      tempMathExpression.split("").map(el => {
+      tempMathExpression.split("").forEach(el => {
         if (el === ".") {
           dotFlag = true;
         }
         if (el === "*" || el === "/" || el === "+" || el === "-") {
           dotFlag = false;
         }
-        return el;
       });
       if (dotFlag) {
-        command = false;
+        updatedCommand = false;
       }
     }
     // check if multiple ** or // or */ or /* or +/ or */
@@ -119,7 +119,7 @@ class App extends Component {
       (lastExpressionChar === "-" &&
         (command === "/" || command === "*" || command === "-"))
     ) {
-      command = false;
+      updatedCommand = false;
     }
     // check if the operator "*,/,+,-" come before ")"
     if (command === ")") {
@@ -129,21 +129,20 @@ class App extends Component {
         lastExpressionChar === "/" ||
         lastExpressionChar === "*"
       ) {
-        command = false;
+        updatedCommand = false;
       }
       // check if the number of closeParenthesis greater then number of openParenthesis
       let openParenthesis = 0;
-      tempMathExpression.split("").map(el => {
+      tempMathExpression.split("").forEach(el => {
         if (el === "(") {
           openParenthesis++;
         }
         if (el === ")") {
           openParenthesis--;
         }
-        return el;
       });
       if (openParenthesis <= 0) {
-        command = false;
+        updatedCommand = false;
       }
     }
     // check if after '(' not come '),*,/' imiddate;
@@ -151,17 +150,17 @@ class App extends Component {
       lastExpressionChar === "(" &&
       (command === ")" || command === "*" || command === "/")
     ) {
-      command = false;
+      updatedCommand = false;
     }
     // check if before modolu we have number
     if (command === "%" && !this.isNumber(lastExpressionChar)) {
-      command = false;
+      updatedCommand = false;
     }
     // check if the maximum length of the math expression greater then 23 chars
     if (this.state.mathExpression.length >= 23) {
-      command = false;
+      updatedCommand = false;
     }
-    return command;
+    return updatedCommand;
   };
 
   // check if the char contain number or not
