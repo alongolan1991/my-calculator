@@ -27,13 +27,12 @@ class App extends Component {
   // check if need to continue with the result or start new expression
   calculateNextStep = command => {
     let newState = { afterResult: false };
-    if (this.state.afterResult) {
-      if (this.isNumber(command)) {
-        newState = { ...newState, mathExpression: "", result: 0 };
-      }
+    if (this.state.afterResult && this.isNumber(command)) {
+      newState = { ...newState, mathExpression: "", result: 0 };
     }
     this.setState(newState, () => {
-      if (this.validation(command)) {
+      command = this.validation(command); // send the command to validate and return new validated command
+      if (command) {
         let tempExpression = this.state.mathExpression;
         tempExpression += command;
         this.setState({ mathExpression: tempExpression });
@@ -58,6 +57,7 @@ class App extends Component {
       return;
     }
     try {
+      // eslint-disable-next-line
       const tempResult = eval(this.state.mathExpression);
       this.setState({
         result: tempResult,
@@ -70,41 +70,29 @@ class App extends Component {
     }
   };
 
-  // fix error thet the validation catch and handel them
-  fixErrorHandler = error => {
-    let temp = null;
-    if (error === "ADD_*") {
-      temp = this.state.mathExpression += "*";
-    }
-    if (error === "ADD_ZERO_TO_BEGIN") {
-      temp = this.state.mathExpression += "0";
-    }
-    this.setState({ mathExpression: temp });
-  };
-
   // check if the input is  valid and handel error in some cases
   validation = command => {
     let tempMathExpression = this.state.mathExpression;
     let lastExpressionChar = tempMathExpression[tempMathExpression.length - 1];
-    
+
     // if the first command is "." so add 0 to begin!
     if (tempMathExpression === "" && command === ".") {
-      this.fixErrorHandler("ADD_ZERO_TO_BEGIN");
+      command = "0.";
     }
-    // check if the first command is " = * / 0 "
+    // check if the first command is "* / 0"
     if (
       tempMathExpression === "" &&
       (command === "*" || command === "/" || command === "0")
     ) {
-      return false;
+      command = false;
     }
     // check if "(" come after number and if not add "*"
     if (this.isNumber(lastExpressionChar) && command === "(") {
-      this.fixErrorHandler("ADD_*");
+      command = "*(";
     }
     // check if number come after ")" and if not add "*"
     if (lastExpressionChar === ")" && this.isNumber(command)) {
-      this.fixErrorHandler("ADD_*");
+      command = "*" + command;
     }
     // check if thet only 1 dot in single number
     if (command === ".") {
@@ -116,10 +104,10 @@ class App extends Component {
         if (el === "*" || el === "/" || el === "+" || el === "-") {
           dotFlag = false;
         }
-        return dotFlag;
+        return el;
       });
       if (dotFlag) {
-        return false;
+        command = false;
       }
     }
     // check if multiple ** or // or */ or /* or +/ or */
@@ -131,7 +119,7 @@ class App extends Component {
       (lastExpressionChar === "-" &&
         (command === "/" || command === "*" || command === "-"))
     ) {
-      return false;
+      command = false;
     }
     // check if the operator "*,/,+,-" come before ")"
     if (command === ")") {
@@ -141,7 +129,7 @@ class App extends Component {
         lastExpressionChar === "/" ||
         lastExpressionChar === "*"
       ) {
-        return false;
+        command = false;
       }
       // check if the number of closeParenthesis greater then number of openParenthesis
       let openParenthesis = 0;
@@ -152,9 +140,10 @@ class App extends Component {
         if (el === ")") {
           openParenthesis--;
         }
+        return el;
       });
       if (openParenthesis <= 0) {
-        return false;
+        command = false;
       }
     }
     // check if after '(' not come '),*,/' imiddate;
@@ -162,24 +151,23 @@ class App extends Component {
       lastExpressionChar === "(" &&
       (command === ")" || command === "*" || command === "/")
     ) {
-      return false;
+      command = false;
     }
     // check if before modolu we have number
     if (command === "%" && !this.isNumber(lastExpressionChar)) {
-      return false;
+      command = false;
     }
-    // check if the maximum length of the math expression
+    // check if the maximum length of the math expression greater then 23 chars
     if (this.state.mathExpression.length >= 23) {
-      return false;
+      command = false;
     }
-
-    return true;
+    return command;
   };
 
   // check if the char contain number or not
-  isNumber(number) {
+  isNumber = number => {
     return !isNaN(number);
-  }
+  };
 
   render() {
     return (
