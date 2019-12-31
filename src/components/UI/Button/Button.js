@@ -1,47 +1,33 @@
 import React from "react";
 import styled from "styled-components";
 
-const button = ({ command, clicked }) => {
-  let text,
-    bgcolor = null;
-  if (
-    command === "+" ||
-    command === "-" ||
-    command === "/" ||
-    command === "*"
-  ) {
-    text = "#FFD133";
-  }
-  if (command === "=") {
-    bgcolor = "#FFD133";
-    text = "white";
-  }
-
+const Button = ({ onClick, className, value }) => {
   return (
-    <>
-      <CalculatorButton text={text} bgcolor={bgcolor} onClick={clicked}>
-        {command}
-      </CalculatorButton>
-    </>
+    <Container className={className} onClick={() => onClick(value)}>
+      {value}
+    </Container>
   );
 };
 
-export default button;
-
-const CalculatorButton = styled.button`
+const Container = styled.button`
   width: 25%;
   height: 20%;
   padding: 3px;
   border: none;
-  font-size: 150%;
+  font-size: 1.5rem;
   font-weight: bold;
   box-sizing: border-box;
-  background-color: ${props => props.bgcolor || "white"};
-  color: ${props => props.text || "black"};
-  outline : none;
+  background-color: white;
+  color: black;
+  outline: none;
+
   &:hover {
     background-color: rgba(255, 134, 51, 0.3);
-    border-radius: 500px;
-    color: black;
+  }
+
+  &:active {
+    background-color: rgba(255, 134, 51, 0.7);
   }
 `;
+
+export default Button;

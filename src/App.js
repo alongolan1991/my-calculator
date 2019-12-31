@@ -1,44 +1,199 @@
 import React, { Component } from "react";
 import styled from "styled-components";
 import "./App.css";
-import Result from "./components/Result/Result";
+import Screen from "./components/Screen/Screen";
 import Keypad from "./components/Keypad/Keypad";
 
 class App extends Component {
-  state = { mathExpression: "", result: 0 };
+  state = {
+    mathExpression: "",
+    result: "0",
+    afterResult: false // afterResult check if you want start new expression or continue with result
+  };
 
+  // Check which command was received and handle it
   buttonClickedHandler = command => {
-    switch (command) {
-      case "=": {
-        const tempResult = eval(this.state.mathExpression);
-        this.setState({result :tempResult,mathExpression : tempResult});
-        break;
-        
+    if (command === "=") {
+      this.setResult();
+    } else if (command === "AC") {
+      this.reset();
+    } else if (command === "BACKSPACE") {
+      this.backspace();
+    } else {
+      this.calculateNextStep(command); // all other command go here!!
+    }
+  };
+
+  // check if need to continue with the result or start new expression
+  calculateNextStep = command => {
+    let newState = { afterResult: false };
+    if (this.state.afterResult) {
+      if (this.isNumber(command)) {
+        newState = { ...newState, mathExpression: "", result: 0 };
       }
-      case "AC": {
-        this.setState({ mathExpression: "", result: 0 });
-        break;
-      }
-      default: {
+    }
+    this.setState(newState, () => {
+      if (this.validation(command)) {
         let tempExpression = this.state.mathExpression;
         tempExpression += command;
         this.setState({ mathExpression: tempExpression });
-        console.log(tempExpression);
       }
+    });
+  };
+
+  // restart the calculator after AC button clicked
+  reset = () => {
+    this.setState({ mathExpression: "", result: 0, afterResult: false });
+  };
+
+  // delete the last char from mathExpression after backspace button clicked
+  backspace = () => {
+    let tempMathExpression = this.state.mathExpression.slice(0, -1);
+    this.setState({ mathExpression: tempMathExpression });
+  };
+
+  // calculate the mathExpression & update the result
+  setResult = () => {
+    if (this.state.mathExpression.length === 0) {
+      return;
+    }
+    try {
+      const tempResult = eval(this.state.mathExpression);
+      this.setState({
+        result: tempResult,
+        mathExpression: tempResult.toString(),
+        afterResult: true
+      });
+    } catch (error) {
+      console.log(error);
+      this.setState({ result: "error", afterResult: true });
     }
   };
+
+  // fix error thet the validation catch and handel them
+  fixErrorHandler = error => {
+    let temp = null;
+    if (error === "ADD_*") {
+      temp = this.state.mathExpression += "*";
+    }
+    if (error === "ADD_ZERO_TO_BEGIN") {
+      temp = this.state.mathExpression += "0";
+    }
+    this.setState({ mathExpression: temp });
+  };
+
+  // check if the input is  valid and handel error in some cases
+  validation = command => {
+    let tempMathExpression = this.state.mathExpression;
+    let lastExpressionChar = tempMathExpression[tempMathExpression.length - 1];
+    
+    // if the first command is "." so add 0 to begin!
+    if (tempMathExpression === "" && command === ".") {
+      this.fixErrorHandler("ADD_ZERO_TO_BEGIN");
+    }
+    // check if the first command is " = * / 0 "
+    if (
+      tempMathExpression === "" &&
+      (command === "*" || command === "/" || command === "0")
+    ) {
+      return false;
+    }
+    // check if "(" come after number and if not add "*"
+    if (this.isNumber(lastExpressionChar) && command === "(") {
+      this.fixErrorHandler("ADD_*");
+    }
+    // check if number come after ")" and if not add "*"
+    if (lastExpressionChar === ")" && this.isNumber(command)) {
+      this.fixErrorHandler("ADD_*");
+    }
+    // check if thet only 1 dot in single number
+    if (command === ".") {
+      let dotFlag = false;
+      tempMathExpression.split("").map(el => {
+        if (el === ".") {
+          dotFlag = true;
+        }
+        if (el === "*" || el === "/" || el === "+" || el === "-") {
+          dotFlag = false;
+        }
+        return dotFlag;
+      });
+      if (dotFlag) {
+        return false;
+      }
+    }
+    // check if multiple ** or // or */ or /* or +/ or */
+    if (
+      (lastExpressionChar === "*" && (command === "/" || command === "*")) ||
+      (lastExpressionChar === "/" && (command === "/" || command === "*")) ||
+      (lastExpressionChar === "+" &&
+        (command === "/" || command === "*" || command === "+")) ||
+      (lastExpressionChar === "-" &&
+        (command === "/" || command === "*" || command === "-"))
+    ) {
+      return false;
+    }
+    // check if the operator "*,/,+,-" come before ")"
+    if (command === ")") {
+      if (
+        lastExpressionChar === "+" ||
+        lastExpressionChar === "-" ||
+        lastExpressionChar === "/" ||
+        lastExpressionChar === "*"
+      ) {
+        return false;
+      }
+      // check if the number of closeParenthesis greater then number of openParenthesis
+      let openParenthesis = 0;
+      tempMathExpression.split("").map(el => {
+        if (el === "(") {
+          openParenthesis++;
+        }
+        if (el === ")") {
+          openParenthesis--;
+        }
+      });
+      if (openParenthesis <= 0) {
+        return false;
+      }
+    }
+    // check if after '(' not come '),*,/' imiddate;
+    if (
+      lastExpressionChar === "(" &&
+      (command === ")" || command === "*" || command === "/")
+    ) {
+      return false;
+    }
+    // check if before modolu we have number
+    if (command === "%" && !this.isNumber(lastExpressionChar)) {
+      return false;
+    }
+    // check if the maximum length of the math expression
+    if (this.state.mathExpression.length >= 23) {
+      return false;
+    }
+
+    return true;
+  };
+
+  // check if the char contain number or not
+  isNumber(number) {
+    return !isNaN(number);
+  }
 
   render() {
     return (
       <Calculator>
-        <Result Expression={this.state.mathExpression} result={this.state.result} />
-        <Keypad clicked={this.buttonClickedHandler} />
+        <Screen
+          onClick={this.buttonClickedHandler}
+          expression={this.state.mathExpression}
+          result={this.state.result}
+        />
+        <Keypad onClick={this.buttonClickedHandler} />
       </Calculator>
     );
   }
 }
-
-export default App;
 
 const Calculator = styled.div`
   width: 360px;
@@ -46,3 +201,5 @@ const Calculator = styled.div`
   border: 1px solid black;
   margin: 5% auto;
 `;
+
+export default App;
