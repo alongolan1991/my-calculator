@@ -2,7 +2,7 @@ import React from "react";
 import styled from "styled-components";
 
 import Button from "../UI/Button/Button";
-import * as constants from '../constants'
+import * as constants from '../../constants'
 
 const Keypad = ({ onClick }) => {
   return (

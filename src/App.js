@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Screen from "./components/Screen/Screen";
 import Keypad from "./components/Keypad/Keypad";
-import * as constants from "./components/constants";
+import * as constants from "./constants";
 
 class App extends Component {
   state = {
@@ -100,7 +100,7 @@ class App extends Component {
     }
     // check if "(" comes after a number and if does not add "*"
     if (this.isNumber(lastExpressionChar) && command === constants.parenthesis.opening) {
-      nextChar = `${constants.operators.multiply}${command}`;
+      nextChar = `${constants.operators.multiply}${constants.parenthesis.opening}`;
     }
     // check if number comes after ")" and if it does add "*"
     if (lastExpressionChar === constants.parenthesis.closing && this.isNumber(command)) {

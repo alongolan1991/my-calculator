@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import Icon from "../UI/Icon/Icon";
 import backSpaceIcon from "../../assets/backspace.png";
-import * as constants from "../constants";
+import * as constants from "../../constants";
 
 const Screen = ({ expression, result, onBackspaceClick }) => {
   return (
