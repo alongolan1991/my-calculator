@@ -1,0 +1,23 @@
+{
+  "files": {
+    "main.css": "/my-calculator/static/css/main.915dc083.chunk.css",
+    "main.js": "/my-calculator/static/js/main.6c890f0e.chunk.js",
+    "main.js.map": "/my-calculator/static/js/main.6c890f0e.chunk.js.map",
+    "runtime-main.js": "/my-calculator/static/js/runtime-main.c55907ad.js",
+    "runtime-main.js.map": "/my-calculator/static/js/runtime-main.c55907ad.js.map",
+    "static/js/2.b5b1b548.chunk.js": "/my-calculator/static/js/2.b5b1b548.chunk.js",
+    "static/js/2.b5b1b548.chunk.js.map": "/my-calculator/static/js/2.b5b1b548.chunk.js.map",
+    "index.html": "/my-calculator/index.html",
+    "precache-manifest.28ded40c4cef23217ef6d0954032aafa.js": "/my-calculator/precache-manifest.28ded40c4cef23217ef6d0954032aafa.js",
+    "service-worker.js": "/my-calculator/service-worker.js",
+    "static/css/main.915dc083.chunk.css.map": "/my-calculator/static/css/main.915dc083.chunk.css.map",
+    "static/js/2.b5b1b548.chunk.js.LICENSE": "/my-calculator/static/js/2.b5b1b548.chunk.js.LICENSE",
+    "static/media/backspace.png": "/my-calculator/static/media/backspace.f5913285.png"
+  },
+  "entrypoints": [
+    "static/js/runtime-main.c55907ad.js",
+    "static/js/2.b5b1b548.chunk.js",
+    "static/css/main.915dc083.chunk.css",
+    "static/js/main.6c890f0e.chunk.js"
+  ]
+}
