@@ -3,11 +3,15 @@ import styled from "styled-components";
 
 import Icon from "../UI/Icon/Icon";
 import backSpaceIcon from "../../assets/backspace.png";
+import * as constants from "../constants";
 
-const Screen = ({ expression, result, onClick }) => {
+const Screen = ({ expression, result, onBackspaceClick }) => {
   return (
     <Container>
-      <Icon command="BACKSPACE" onClick={onClick} icon={backSpaceIcon} />
+      <Icon
+        onClick={() => onBackspaceClick(constants.commands.backspace)}
+        icon={backSpaceIcon}
+      />
       <MathExpression>{expression}</MathExpression>
       <Result error={result === "error"}>{result}</Result>
     </Container>
@@ -22,7 +26,7 @@ const Container = styled.div`
   box-sizing: border-box;
   display: flex;
   flex-direction: column;
-  text-align: right;
+  align-items: flex-end;
 `;
 
 const MathExpression = styled.h2`

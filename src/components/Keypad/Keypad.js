@@ -2,30 +2,31 @@ import React from "react";
 import styled from "styled-components";
 
 import Button from "../UI/Button/Button";
+import * as constants from '../constants'
 
 const Keypad = ({ onClick }) => {
   return (
     <Container>
-      <Button value="AC" onClick={onClick} />
-      <Button value="(" onClick={onClick} />
-      <Button value=")" onClick={onClick} />
-      <OperatorButton value="/" onClick={onClick} />
-      <Button value="7" onClick={onClick} />
-      <Button value="8" onClick={onClick} />
-      <Button value="9" onClick={onClick} />
-      <OperatorButton value="*" onClick={onClick} />
-      <Button value="4" onClick={onClick} />
-      <Button value="5" onClick={onClick} />
-      <Button value="6" onClick={onClick} />
-      <OperatorButton value="-" onClick={onClick} />
-      <Button value="1" onClick={onClick} />
-      <Button value="2" onClick={onClick} />
-      <Button value="3" onClick={onClick} />
-      <OperatorButton value="+" onClick={onClick} />
-      <Button value="0" onClick={onClick} />
-      <Button value="." onClick={onClick} />
-      <Button value="%" onClick={onClick} />
-      <EqualSignButton value="=" onClick={onClick} />
+      <Button value={constants.commands.AC} onClick={onClick} />
+      <Button value={constants.parenthesis.opening} onClick={onClick} />
+      <Button value={constants.parenthesis.closing} onClick={onClick} />
+      <OperatorButton value={constants.operators.devide} onClick={onClick} />
+      <Button value={constants.digits.seven} onClick={onClick} />
+      <Button value={constants.digits.eight} onClick={onClick} />
+      <Button value={constants.digits.nine} onClick={onClick} />
+      <OperatorButton value={constants.operators.multiply} onClick={onClick} />
+      <Button value={constants.digits.four} onClick={onClick} />
+      <Button value={constants.digits.five} onClick={onClick} />
+      <Button value={constants.digits.six} onClick={onClick} />
+      <OperatorButton value={constants.operators.minus} onClick={onClick} />
+      <Button value={constants.digits.one} onClick={onClick} />
+      <Button value={constants.digits.two} onClick={onClick} />
+      <Button value={constants.digits.three} onClick={onClick} />
+      <OperatorButton value={constants.operators.plus} onClick={onClick} />
+      <Button value={constants.digits.zero} onClick={onClick} />
+      <Button value={constants.dot} onClick={onClick} />
+      <Button value={constants.mod} onClick={onClick} />
+      <EqualSignButton value={constants.commands.equal} onClick={onClick} />
     </Container>
   );
 };

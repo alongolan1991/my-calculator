@@ -1,40 +1,47 @@
 import React, { Component } from "react";
 import styled from "styled-components";
-import "./App.css";
+
 import Screen from "./components/Screen/Screen";
 import Keypad from "./components/Keypad/Keypad";
+import * as constants from "./components/constants";
 
 class App extends Component {
   state = {
     mathExpression: "",
     result: "0",
-    afterResult: false // afterResult check if you want start new expression or continue with result
+    finishedCalculation: false // determines if to start a new expression or continue constructing result
   };
 
-  // Check which command was received and handle it
   buttonClickedHandler = command => {
-    if (command === "=") {
-      this.setResult();
-    } else if (command === "AC") {
-      this.reset();
-    } else if (command === "BACKSPACE") {
-      this.backspace();
-    } else {
-      this.calculateNextStep(command); // all other command go here!!
+    switch (command) {
+      case constants.commands.equal: {
+        this.setResult();
+        break;
+      }
+      case constants.commands.AC: {
+        this.reset();
+        break;
+      }
+      case constants.commands.backspace: {
+        this.backSpace();
+        break;
+      }
+      default: {
+        this.updateScreen(command); // all other command go here!!
+      }
     }
   };
 
-  // check if need to continue with the result or start new expression
-  calculateNextStep = command => {
-    let newState = { afterResult: false };
-    if (this.state.afterResult && this.isNumber(command)) {
+  updateScreen = command => {
+    let newState = { finishedCalculation: false };
+    if (this.state.finishedCalculation && this.isNumber(command)) {
       newState = { ...newState, mathExpression: "", result: 0 };
     }
     this.setState(newState, () => {
-      command = this.validation(command); // send the command to validate and return new validated command
-      if (command) {
+      const nextChar = this.getNextChar(command); // determine next char to append
+      if (nextChar !== "") {
         let tempExpression = this.state.mathExpression;
-        tempExpression += command;
+        tempExpression = `${tempExpression}${nextChar}`;
         this.setState({ mathExpression: tempExpression });
       }
     });
@@ -42,11 +49,15 @@ class App extends Component {
 
   // restart the calculator after AC button clicked
   reset = () => {
-    this.setState({ mathExpression: "", result: 0, afterResult: false });
+    this.setState({
+      mathExpression: "",
+      result: 0,
+      finishedCalculation: false
+    });
   };
 
   // delete the last char from mathExpression after backspace button clicked
-  backspace = () => {
+  backSpace = () => {
     let tempMathExpression = this.state.mathExpression.slice(0, -1);
     this.setState({ mathExpression: tempMathExpression });
   };
@@ -62,108 +73,102 @@ class App extends Component {
       this.setState({
         result: tempResult,
         mathExpression: tempResult.toString(),
-        afterResult: true
+        finishedCalculation: true
       });
     } catch (error) {
       console.log(error);
-      this.setState({ result: "error", afterResult: true });
+      this.setState({ result: "error", finishedCalculation: true });
     }
   };
 
-  // check if the input is  valid and handel error in some cases
-  validation = command => {
-    let updatedCommand = command;
-    let tempMathExpression = this.state.mathExpression;
-    let lastExpressionChar = tempMathExpression[tempMathExpression.length - 1];
-
-    // if the first command is "." so add 0 to begin!
-    if (tempMathExpression === "" && command === ".") {
-      updatedCommand = "0.";
+  // determine the next char/characters to append
+  getNextChar = command => {
+    let nextChar = command;
+    const { mathExpression } = this.state;
+    const lastExpressionChar = mathExpression[mathExpression.length - 1];
+    
+    // if the first command is "." so add 0 to begin
+    if (mathExpression === "" && command === constants.dot) {
+      nextChar = `${constants.digits.zero}${constants.dot}`;
     }
     // check if the first command is "* / 0"
     if (
-      tempMathExpression === "" &&
-      (command === "*" || command === "/" || command === "0")
+      mathExpression === "" &&
+      (command === constants.operators.multiply || command === constants.operators.devide || command === constants.digits.zero)
     ) {
-      updatedCommand = false;
+      nextChar = "";
     }
-    // check if "(" come after number and if not add "*"
-    if (this.isNumber(lastExpressionChar) && command === "(") {
-      updatedCommand = "*(";
+    // check if "(" comes after a number and if does not add "*"
+    if (this.isNumber(lastExpressionChar) && command === constants.parenthesis.opening) {
+      nextChar = `${constants.operators.multiply}${command}`;
     }
-    // check if number come after ")" and if not add "*"
-    if (lastExpressionChar === ")" && this.isNumber(command)) {
-      updatedCommand = "*" + command;
+    // check if number comes after ")" and if it does add "*"
+    if (lastExpressionChar === constants.parenthesis.closing && this.isNumber(command)) {
+      nextChar = `${constants.operators.multiply}${command}`;
     }
-    // check if thet only 1 dot in single number
-    if (command === ".") {
+    // check if that there is only 1 dot in single number
+    if (command === constants.dot) {
       let dotFlag = false;
-      tempMathExpression.split("").forEach(el => {
-        if (el === ".") {
+      mathExpression.split("").forEach(el => {
+        if (el === constants.dot) {
           dotFlag = true;
         }
-        if (el === "*" || el === "/" || el === "+" || el === "-") {
+        if (Object.values(constants.operators).includes(el)) {
           dotFlag = false;
         }
       });
       if (dotFlag) {
-        updatedCommand = false;
+        nextChar = "";
       }
     }
     // check if multiple ** or // or */ or /* or +/ or */
     if (
-      (lastExpressionChar === "*" && (command === "/" || command === "*")) ||
-      (lastExpressionChar === "/" && (command === "/" || command === "*")) ||
-      (lastExpressionChar === "+" &&
-        (command === "/" || command === "*" || command === "+")) ||
-      (lastExpressionChar === "-" &&
-        (command === "/" || command === "*" || command === "-"))
+      (lastExpressionChar === constants.operators.multiply && (command === constants.operators.devide || command === constants.operators.multiply)) ||
+      (lastExpressionChar === constants.operators.devide && (command === constants.operators.devide || command === constants.operators.multiply)) ||
+      (lastExpressionChar === constants.operators.plus &&
+        (command === constants.operators.devide || command === constants.operators.multiply || command === constants.operators.plus)) ||
+      (lastExpressionChar === constants.operators.minus &&
+        (command === constants.operators.devide || command === constants.operators.multiply || command === constants.operators.minus))
     ) {
-      updatedCommand = false;
+      nextChar = "";
     }
     // check if the operator "*,/,+,-" come before ")"
-    if (command === ")") {
-      if (
-        lastExpressionChar === "+" ||
-        lastExpressionChar === "-" ||
-        lastExpressionChar === "/" ||
-        lastExpressionChar === "*"
-      ) {
-        updatedCommand = false;
+    if (command === constants.parenthesis.closing) {
+      if (Object.values(constants.operators).includes(lastExpressionChar)) {
+        nextChar = "";
       }
-      // check if the number of closeParenthesis greater then number of openParenthesis
+      // validate parenthesis
       let openParenthesis = 0;
-      tempMathExpression.split("").forEach(el => {
-        if (el === "(") {
+      mathExpression.split("").forEach(el => {
+        if (el === constants.parenthesis.opening) {
           openParenthesis++;
         }
-        if (el === ")") {
+        if (el === constants.parenthesis.closing) {
           openParenthesis--;
         }
       });
       if (openParenthesis <= 0) {
-        updatedCommand = false;
+        nextChar = "";
       }
     }
     // check if after '(' not come '),*,/' imiddate;
     if (
-      lastExpressionChar === "(" &&
-      (command === ")" || command === "*" || command === "/")
+      lastExpressionChar === constants.parenthesis.opening &&
+      (command === constants.parenthesis.closing || command === constants.operators.multiply || command === constants.operators.devide)
     ) {
-      updatedCommand = false;
+      nextChar = "";
     }
     // check if before modolu we have number
-    if (command === "%" && !this.isNumber(lastExpressionChar)) {
-      updatedCommand = false;
+    if (command === constants.mod && !this.isNumber(lastExpressionChar)) {
+      nextChar = "";
     }
     // check if the maximum length of the math expression greater then 23 chars
     if (this.state.mathExpression.length >= 23) {
-      updatedCommand = false;
+      nextChar = "";
     }
-    return updatedCommand;
+    return nextChar;
   };
 
-  // check if the char contain number or not
   isNumber = number => {
     return !isNaN(number);
   };
@@ -172,7 +177,7 @@ class App extends Component {
     return (
       <Calculator>
         <Screen
-          onClick={this.buttonClickedHandler}
+          onBackspaceClick={this.buttonClickedHandler}
           expression={this.state.mathExpression}
           result={this.state.result}
         />
